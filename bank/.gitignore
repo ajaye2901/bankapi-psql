@@ -19,4 +19,4 @@ __pycache__/
 .env
 
 # Ignore virtual environments
-myenv
+myenv/
