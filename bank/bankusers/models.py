@@ -17,25 +17,40 @@ class User(AbstractUser):
         return self.username
 
 class BankStaff(models.Model) :
-    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_bankstaff" : True})
+    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_bankstaff" : True}, related_name="bankstaff")
     staff_id = models.CharField(max_length=4, unique=True)
-    DEP_STATUS = (
-        ('')
-    )
+    dob = models.DateField()
+    Address = models.TextField()
+    city = models.CharField(max_length=50)
+    state = models.CharField(max_length=50)
+    Branch = models.CharField(max_length=50)
 
-    # ROLE_CHOICES = (
-    #     ('admin', 'Admin'),
-    #     ('bankstaff', 'Bank Staff'),
-    #     ('normal', 'Normal User'),
-    # )
-    # role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    # account_number = models.CharField(max_length=16, blank=True, unique=True, null=True)
+    def save(self, *args, **kwargs):
+        if not self.staff_id :
+            self.staff_id = self.generate_unique_staff_id()
+        super().save(*args, **kwargs)
 
-    # def save(self, *args, **kwargs):
-    #     if self.role == 'normal' and not self.account_number:
-    #         self.account_number = self.generate_account_number()
-    #     super().save(*args, **kwargs)
+    @staticmethod
+    def generate_unique_staff_id() :
+        while True :
+            staff_id = f"{random.randint(1000,9999)}"
+            if not BankStaff.objects.filter(staff_id=staff_id).exists():
+                return staff_id
+            
+    def __str__(self) -> str:
+        return f"{self.user.name} - {self.staff_id}"
+    
+class Customer(models.Model) :
 
-    # @staticmethod
-    # def generate_account_number():
-    #     return ''.join([str(random.randint(0, 9)) for _ in range(16)])
+    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_customer" : True}, related_name='customer')
+    dob = models.DateField()
+    fathers_name = models.CharField(max_length=50)
+    mothers_name = models.CharField(max_length=50)
+    address = models.TextField()
+    city = models.CharField(max_length=50)
+    state =  models.CharField(max_length=50)
+    pin_number = models.PositiveIntegerField(max_length=6)
+    aadhar_no = models.PositiveBigIntegerField(max_length=16)
+
+
+    
