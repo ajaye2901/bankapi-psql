@@ -13,6 +13,17 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'email']
 
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='custom_user_set',  
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='custom_user_permissions',  
+        blank=True
+    )
+
     def __str__(self) -> str:
         return self.username
 
@@ -48,8 +59,8 @@ class Customer(models.Model) :
     address = models.TextField()
     city = models.CharField(max_length=50)
     state =  models.CharField(max_length=50)
-    pin_number = models.PositiveIntegerField(max_length=6)
-    aadhar_no = models.PositiveBigIntegerField(max_length=12, unique=True)
+    pin_number = models.CharField(max_length=6)
+    aadhar_no = models.CharField(max_length=12, unique=True)
 
     def __str__(self) -> str:
         return f"{self.user.name} - {self.aadhar_no}"
@@ -61,9 +72,9 @@ class Account(models.Model) :
     ACCOUNT_CHOICE = (
         ('Savings', 'Savings'),
         ('Current' , 'Current'),
-        ('Salary', 'Salary')
+        ('Salary', 'Salary'),
         ('NRI', 'NRI'),
-        ('FD', 'FD')
+        ('FD', 'FD'),
     )
     account_type = models.CharField(max_length=20, choices=ACCOUNT_CHOICE)
     account_no = models.PositiveBigIntegerField(unique=True) 
