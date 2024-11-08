@@ -41,7 +41,6 @@ class BankStaff(models.Model) :
         return f"{self.user.name} - {self.staff_id}"
     
 class Customer(models.Model) :
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_customer" : True}, related_name='customer')
     dob = models.DateField()
     fathers_name = models.CharField(max_length=50)
@@ -50,7 +49,40 @@ class Customer(models.Model) :
     city = models.CharField(max_length=50)
     state =  models.CharField(max_length=50)
     pin_number = models.PositiveIntegerField(max_length=6)
-    aadhar_no = models.PositiveBigIntegerField(max_length=16)
+    aadhar_no = models.PositiveBigIntegerField(max_length=12, unique=True)
+
+    def __str__(self) -> str:
+        return f"{self.user.name} - {self.aadhar_no}"
+
+    
+
+class Account(models.Model) :
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    ACCOUNT_CHOICE = (
+        ('Savings', 'Savings'),
+        ('Current' , 'Current'),
+        ('Salary', 'Salary')
+        ('NRI', 'NRI'),
+        ('FD', 'FD')
+    )
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_CHOICE)
+    account_no = models.PositiveBigIntegerField(unique=True) 
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.account_no:
+            self.account_no = self.generate_unique_account_no()
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def generate_unique_account_no():
+        while True:
+            account_no = random.randint(10**15, 10**16 - 1)  # Generate a 16-digit number
+            if not Account.objects.filter(account_no=account_no).exists():
+                return account_no
+
+    def __str__(self) -> str:
+        return f"{self.user.user.name} - {self.account_type} - {self.account_no} - {self.balance}" 
 
 
     
