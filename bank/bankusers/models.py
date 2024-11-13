@@ -7,11 +7,11 @@ class User(AbstractUser):
     name = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=10)
-    is_bankstaff = models.BooleanField(default=False)  # Changed to BooleanField
-    is_customer = models.BooleanField(default=False)   # Changed to BooleanField
+    is_bankstaff = models.BooleanField(default=False)  
+    is_customer = models.BooleanField(default=False)   
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'name']  # Updated REQUIRED_FIELDS
+    REQUIRED_FIELDS = ['username', 'name'] 
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -86,7 +86,7 @@ class Account(models.Model):
     @staticmethod
     def generate_unique_account_no():
         while True:
-            account_no = random.randint(10**15, 10**16 - 1)  # Generate a 16-digit number
+            account_no = random.randint(10**15, 10**16 - 1) 
             if not Account.objects.filter(account_no=account_no).exists():
                 return account_no
 

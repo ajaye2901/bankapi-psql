@@ -93,3 +93,37 @@ class CustomerLoginView(APIView) :
         else :
             return Response({"error" : "Invalid Credentials"}, status=status.HTTP_403_FORBIDDEN)
 
+class AccountCreationView(APIView):
+    permission_classes = [IsBankStaff]
+
+    def post(self, request, *args, **kwargs):
+        serializer = AccountSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class CustomerDashboardView(APIView) :
+    permission_classes = [IsCustomer]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            customer = Customer.objects.get(user=request.user)
+            account = Account.objects.get(user=customer)
+
+            data = {
+                "name": customer.user.name,
+                "email": customer.user.email,
+                "phone_number": customer.user.phone_number,
+                "account_type": account.account_type,
+                "account_no": account.account_no,
+                "balance": account.balance
+            }
+            return Response(data, status=200)
+
+        except Customer.DoesNotExist:
+            return Response({"detail": "Customer not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Account.DoesNotExist:
+            return Response({"detail": "Account not found."}, status=status.HTTP_404_NOT_FOUND)

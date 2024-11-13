@@ -41,18 +41,32 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = ['user', 'dob', 'fathers_name', 'mothers_name', 'address', 'city', 'state', 'pin_number', 'aadhar_no']
 
     def create(self, validated_data):
-        # Extract user data from the validated data
         user_data = validated_data.pop('user')
-
-        # Create the user using create_user method to handle password hashing
         user = User.objects.create_user(**user_data)
-
-        # Ensure the user is assigned as a customer
         user.is_customer = True
         user.save()
-
-        # Create the customer instance and associate the user
         customer = Customer.objects.create(user=user, **validated_data)
         return customer
 
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['user', 'account_type', 'account_no', 'balance']
+        read_only_fields = ['account_no']
+    
+    def create(self, validated_data):
+        customer = validated_data.get('user')
+        if not isinstance(customer, Customer):
+            raise serializers.ValidationError("The provided user is not a customer.")
+        
+        return super().create(validated_data)
+    
+class DashboardSerializer(serializers.ModelSerializer) :
+    account_type = serializers.CharField(source='account.account_type')
+    account_no = serializers.CharField(source='account.account_no')
+    balance = serializers.DecimalField(source='account.balance', max_digits=10, decimal_places=2)
+
+    class Meta:
+        model = Customer
+        fields = ['user__name', 'user__email', 'user__phone_number', 'account_type', 'account_no', 'balance']
 
