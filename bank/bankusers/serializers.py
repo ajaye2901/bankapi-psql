@@ -1,42 +1,58 @@
 from rest_framework import serializers
-from .models import *
+from .models import User, BankStaff, Customer, Account
 
-class UserSerializer(serializers.Serializer) :
-    class Meta :
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
         model = User
-        fields = ['id','username', 'name', 'email', 'phone_number', 'is_bankstaff', 'is_customer']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
-
-    def create(self, validated_data):
-        user = User(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            name=validated_data['name'],
-            phone_number=validated_data['phone_number']
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
+        fields = ['username', 'name', 'email', 'phone_number', 'password', 'is_bankstaff']
     
-class BankStaffSerializer(serializers.Serializer) :
-    user = UserSerializer(read_only=True)
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+
+
+class BankStaffSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
 
     class Meta:
         model = BankStaff
-        fields = ['id', 'user', 'staff_id', 'dob', 'Address', 'city', 'state', 'Branch']
+        fields = ['user', 'staff_id', 'dob', 'address', 'city', 'state', 'branch']
+        read_only_fields = ['staff_id']
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user = User.objects.create_user(**user_data)
+
+        if not user.is_bankstaff:
+            raise serializers.ValidationError("User must be assigned as a bank staff.")
+
+        bank_staff = BankStaff.objects.create(user=user, **validated_data)
+        return bank_staff
+
 
 class CustomerSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserSerializer()
 
     class Meta:
         model = Customer
-        fields = ['id', 'user', 'dob', 'fathers_name', 'mothers_name', 'address', 'city', 'state', 'pin_number', 'aadhar_no']
+        fields = ['user', 'dob', 'fathers_name', 'mothers_name', 'address', 'city', 'state', 'pin_number', 'aadhar_no']
 
-class AccountSerializer(serializers.ModelSerializer):
-    user = CustomerSerializer(read_only=True)
+    def create(self, validated_data):
+        # Extract user data from the validated data
+        user_data = validated_data.pop('user')
 
-    class Meta:
-        model = Account
-        fields = ['id', 'user', 'account_type', 'account_no', 'balance']
+        # Create the user using create_user method to handle password hashing
+        user = User.objects.create_user(**user_data)
+
+        # Ensure the user is assigned as a customer
+        user.is_customer = True
+        user.save()
+
+        # Create the customer instance and associate the user
+        customer = Customer.objects.create(user=user, **validated_data)
+        return customer
+
+
