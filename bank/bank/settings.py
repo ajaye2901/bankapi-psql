@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bankusers',
+    'transaction',
 
     'rest_framework',
     'rest_framework_simplejwt',
