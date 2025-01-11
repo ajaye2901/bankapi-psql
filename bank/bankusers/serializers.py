@@ -27,9 +27,6 @@ class BankStaffSerializer(serializers.ModelSerializer):
         user_data['is_bankstaff'] = True
         user = User.objects.create_user(**user_data)
 
-        if not user.is_bankstaff:
-            raise serializers.ValidationError("User must be assigned as a bank staff.")
-
         bank_staff = BankStaff.objects.create(user=user, **validated_data)
         return bank_staff
 
@@ -43,9 +40,9 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
+        user_data['is_customer'] = True
         user = User.objects.create_user(**user_data)
-        user.is_customer = True
-        user.save()
+
         customer = Customer.objects.create(user=user, **validated_data)
         return customer
 

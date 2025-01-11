@@ -52,7 +52,7 @@ class BankStaff(models.Model):
         return f"{self.user.name} - {self.staff_id}"
 
 class Customer(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_customer": True}, related_name='customer')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customer')
     dob = models.DateField()
     fathers_name = models.CharField(max_length=50)
     mothers_name = models.CharField(max_length=50)
