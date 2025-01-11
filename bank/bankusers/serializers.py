@@ -24,6 +24,7 @@ class BankStaffSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
+        user_data['is_bankstaff'] = True
         user = User.objects.create_user(**user_data)
 
         if not user.is_bankstaff:

@@ -33,7 +33,6 @@ class BankStaffRegistrationView(APIView):
     permission_classes = [IsSuperAdmin]
 
     def post(self, request, *args, **kwargs):
-        request.data['user']['is_bankstaff'] = True
         
         serializer = BankStaffSerializer(data=request.data)
 
@@ -69,6 +68,7 @@ class CustomerRegistrationView(APIView):
         serializer = CustomerSerializer(data=request.data)
 
         if serializer.is_valid():
+            is_bankstaff = True
             serializer.save() 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         

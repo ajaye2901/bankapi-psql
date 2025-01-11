@@ -28,7 +28,7 @@ class User(AbstractUser):
         return self.username
 
 class BankStaff(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_bankstaff": True}, related_name="bankstaff")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bankstaff")
     staff_id = models.CharField(max_length=4, unique=True)
     dob = models.DateField()
     address = models.TextField()
